@@ -1,0 +1,14 @@
+#If anything is added later use "conda env create -f environment.yml --force" to change to updated one#
+name: MLProject
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - numpy
+  - scipy         
+  - matplotlib
+  - seaborn
+  - pandas
+  - sympy         
+  - jupyter  
