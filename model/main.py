@@ -1,4 +1,5 @@
 import math
+import numpy
 class NeuralNetwork:
     def __init__(self, activation_function, learning_rate, num_hidden_layers):
         self.activation_function: str = activation_function
