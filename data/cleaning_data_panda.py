@@ -33,7 +33,16 @@ def clean_realtor_data(
     if "house_size" in df.columns:
         df = df.dropna(subset=["house_size"])
         print(f"Rows after removing missing house_size: {len(df)}")
-    
+    # Keep data of only ones that have number of bedrooms and number of bathrooms
+    if "bed" and "bath" in df.columns:
+        df = df.dropna(subset=["bed"])
+        print(f"after removing bedrooms missing rows: {len(df)}")
+        df = df.dropna(subset=["bath"])
+        print(f"after removing bathrooms missing rows: {len(df)}")
+    #Remove data with missing acre lots
+    if "acre_lot" in df.columns:
+        df = df.dropna(subset=["acre_lot"])
+        print(f"after removing acre_lot missing rows: {len(df)}")
     # 3. Drop unwanted columns
     existing_drop_cols = [col for col in drop_columns if col in df.columns]
     df = df.drop(columns=existing_drop_cols)
@@ -50,21 +59,25 @@ def clean_realtor_data(
         )
     # Change state names to ids
     if "state" in df.columns:
-        df["state_id"] = df["state"].map(STATE_TO_ID) 
+        df["state_id"] = df["state"].map(STATE_TO_ID).astype(np.int8)
         df = df.drop(columns="state")
-
-    #####Ask temmates
-    bad_data = df[df['zip_code'].astype(str) == '00nan']
-    print(bad_data)
     # 5. Split zip_code into separate sections
     if split_zip and "zip_code" in df.columns:
-        # full digit split
+        #remove missing values
+        df = df[df['zip_code'].astype(str) != '00nan']
+        #split by meaning
         df["national_area"] = df["zip_code"].str[0]
         df["national_area"] = df["national_area"].astype(np.int8)
         df["sectional_center_facility"] = df["zip_code"].str[1:3] #convert to numpy type and convert 7 == 07, and there is no need to make categories instead
-        df["sectional_center_facility"] = df["sectional_center_facility"].astype(int).astype(np.int16)
-        df["delivery_area"] = df["zip_code"].str[3:] #same case as above
+        df["sectional_center_facility"] = df["sectional_center_facility"].astype(int).astype(np.int8)
+        df["delivery_area"] = df["zip_code"].str[3:].astype(np.int8) #same case as above
         df = df.drop(columns="zip_code")
+    #creating numpy compatible values
+    df["price"] = df["price"].astype(np.float64)
+    df["bed"] = df["bed"].astype(np.int8)
+    df["bath"] = df["bath"].astype(np.int8)
+    df["acre_lot"] = df["acre_lot"].astype(np.float64)
+    df["house_size"] = df["house_size"].astype(np.float64)
     #saved cleaned file
     df.to_csv(output_file, index=False)
 
@@ -75,7 +88,7 @@ def clean_realtor_data(
 
 if __name__ == "__main__":
     INPUT_FILE = "data/realtor_final_cleaned_zip5.csv"
-    OUTPUT_FILE = "data/realtor_cleaned_ready.csv"
+    OUTPUT_FILE = "data/clean_estate_data.csv"
 
     clean_realtor_data(
         input_file=INPUT_FILE,
