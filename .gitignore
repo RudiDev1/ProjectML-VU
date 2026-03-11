@@ -2,3 +2,7 @@
 #Ignore .pyc caches
 ######
 *.pyc
+#####
+#Ignore enviorment settings visual studio code
+#####
+/.vscode/**
