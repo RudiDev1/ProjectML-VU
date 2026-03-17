@@ -10,8 +10,12 @@ class NeuralNetwork:
         self.W, _ = self.set_up_wandb()
         _, self.B = self.set_up_wandb()
     
-    def cost():
-        return
+    def cost(self, model_outputs, expected_outputs):
+        losses = np.abs(model_outputs - expected_outputs)
+        summed_losses = np.sum(losses)
+        num_of_data = model_outputs.reshape(-1).shape[0]
+        average_losses = (1 / num_of_data) * summed_losses
+        return average_losses
     
     def set_up_wandb(self):
         """
