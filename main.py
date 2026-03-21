@@ -2,10 +2,9 @@ import math
 from typing import List
 import numpy as np
 class NeuralNetwork:
-    def __init__(self, learning_rate, num_layers, nodes_per_layer, activation_function='SIGMOID'):
+    def __init__(self, learning_rate, nodes_per_layer, activation_function='SIGMOID'):
         self.activation_function: str = activation_function
         self.learning_rate: float = learning_rate
-        self.num_layers: int = num_layers
         self.nodes_per_layer: List[int] = nodes_per_layer
         self.W, _ = self.set_up_wandb()
         _, self.B = self.set_up_wandb()
@@ -33,11 +32,33 @@ class NeuralNetwork:
             B.append(np.random.randn(nodes_per_layer[layer], 1))
         return W, B
     
+    def back_prop(self, y_true):
+        n = y_true.shape[1]
+        length = len(self.nodes_per_layer) - 1 #total number of layers of weights 1 less than layers of network
+
+        dA = self.activations[-1] - y_true
+
+        for i in reversed(range(length)):
+            priorA = self.activations[i+1]
+            currentA = self.activations[i]
+
+            dZ = dA * (priorA * (1 - priorA))
+            dW = (1 / n) * (dZ @ currentA.T)
+            dB = (1 / n) * np.sum(dZ, axis=1, keepdims=True)
+
+            if i>0:
+                dA = self.W[i].T @ dZ
+
+            self.W[i] = self.W[i] - (self.learning_rate * dW)
+            self.B[i] = self.B[i] - (self.learning_rate * dB)
+    
     def forward(self, model_inputs):
         """
         Runs the forward loop - passes model inputs through network and applies specific weights and biases
         in order to determine the models prediction
         """
+        self.activations = [model_inputs]
+
         print(self.W[0])
         print(self.W[0].shape)
         print(model_inputs.shape)
@@ -49,6 +70,8 @@ class NeuralNetwork:
             activated_output = self.relu(output)
         elif self.activation_function == 'LEAKY-RELU':
             activated_output = self.leaky_relu(output)
+        
+        self.activations.append(activated_output)
 
         for layer in range(len(self.W)-1):
             output = self.W[layer+1] @ activated_output + self.B[layer+1]
@@ -58,6 +81,8 @@ class NeuralNetwork:
                 activated_output = self.relu(output)
             elif self.activation_function == 'LEAKY-RELU':
                 activated_output = self.leaky_relu(output)
+            
+            self.activations.append(activated_output)
         
         y_hat = activated_output
         return y_hat
@@ -91,9 +116,18 @@ def main():
         [184, 64],
         [130, 69]
     ])
+    x = x / np.max(x)
+    y = np.array([[1, 0, 0, 1, 1, 0, 0, 1, 0, 1]])
+
     x = x.T
-    nn = NeuralNetwork(0.01, 3, [2, 3, 3, 1])
-    y_hat = nn.forward(x)
-    print(y_hat)
+    nn = NeuralNetwork(0.01, [2, 3, 3, 1])
+    
+    epochs = 100
+    for i in range(epochs):
+        y_hat = nn.forward(x)
+        cost = nn.cost(y_hat, y)
+        nn.back_prop(y)
+        print(f'Epoch: {i} - cost: {cost}')
+
 
 main()
