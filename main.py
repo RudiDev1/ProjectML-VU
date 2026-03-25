@@ -1,8 +1,9 @@
 import math
 from typing import List
 import numpy as np
+import pandas as pd
 class NeuralNetwork:
-    def __init__(self, learning_rate, nodes_per_layer, activation_function='SIGMOID'):
+    def __init__(self, learning_rate, nodes_per_layer, activation_function='RELU'):
         self.activation_function: str = activation_function
         self.learning_rate: float = learning_rate
         self.nodes_per_layer: List[int] = nodes_per_layer
@@ -89,10 +90,10 @@ class NeuralNetwork:
 
     
     def relu(self, x):
-        return max(0, x)
+        return np.max(0, x)
     
     def leaky_relu(self, x):
-        return max(0.1*x, x)
+        return np.max(0.1*x, x)
     
     def sigmoid(self, x):
         return 1 / (1 + (math.e ** -x))
@@ -158,12 +159,19 @@ def main():
     x = x.T
     nn = NeuralNetwork(0.01, [2, 3, 3, 1])
     
+
+def main():
+    dict_data = prepare_data("data/clean_estate_data.csv")
+    x = dict_data["train"][1]
+    y = dict_data["train"][0]
+    y = y.reshape(1, -1)
+    x = x.T
+    nn = NeuralNetwork(0.01, [8, 3, 1])
+
     epochs = 100
     for i in range(epochs):
         y_hat = nn.forward(x)
         cost = nn.cost(y_hat, y)
         nn.back_prop(y)
         print(f'Epoch: {i} - cost: {cost}')
-
-
 main()
