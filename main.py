@@ -100,8 +100,44 @@ class NeuralNetwork:
     def run_nn():
         return
 
-def prepare_training_data():
-    return 
+def prepare_data(path: str) -> dict[str: List]:
+    """
+    Extract the created dataset from given path and split it into train/test set
+    returns Dictionary with string either "train", "test" as key
+            List inside at index 0 output (price), index 1 
+    """
+    df = pd.read_csv(path)
+    #select the random seed for a data division
+    np.random.seed(142344)
+    #shuffle list of indicies
+    indicies = np.arange(len(df))
+    np.random.shuffle(indicies)
+    #train/test division
+    train_size = int(0.8 * len(df))
+    train_i = indicies[:train_size]
+    test_i = indicies[train_size:]
+    train_set = df.iloc[train_i]
+    test_set = df.iloc[test_i]
+    price_train = train_set["price"].values.astype(np.float64)
+    price_test = test_set["price"].values.astype(np.float64)
+    #numerical inputs == cI
+    #bed,bath,acre_lot,house_size,state_id,national_area,sectional_center_facility,delivery_area
+    cI_train = train_set[["bed", "bath", "acre_lot", "house_size"]].values.astype(np.float64)
+    cI_test = test_set[["bed", "bath", "acre_lot", "house_size"]].values.astype(np.float64)
+    #standardize
+    mean_tr = cI_train.mean(axis=0)
+    sd_tr = cI_train.std(axis=0)
+    cI_train = (cI_train - mean_tr) / sd_tr
+    cI_test = (cI_test - mean_tr) / sd_tr
+    #"categorical" input == id_I
+    id_i_train = train_set[["state_id","national_area","sectional_center_facility","delivery_area"]].values.astype(np.int16)
+    id_i_test = test_set[["state_id","national_area","sectional_center_facility","delivery_area"]].values.astype(np.int16)
+    train_inputs = np.concatenate([cI_train, id_i_train], 1)
+    test_inputs = np.concatenate([cI_test, id_i_test], 1)
+    return {
+        "train": [price_train, train_inputs],
+        "test": [price_test, test_inputs]
+    }
 
 def main():
     x = np.array([
