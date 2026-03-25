@@ -42,8 +42,11 @@ class NeuralNetwork:
         for i in reversed(range(length)):
             priorA = self.activations[i+1]
             currentA = self.activations[i]
-
-            dZ = dA * (priorA * (1 - priorA))
+            
+            if self.activation_function == 'SIGMOID':
+                dZ = dA * (priorA * (1 - priorA))
+            elif self.activation_function == 'RELU':
+                dZ = dA * (priorA > 0)
             dW = (1 / n) * (dZ @ currentA.T)
             dB = (1 / n) * np.sum(dZ, axis=1, keepdims=True)
 
@@ -52,6 +55,7 @@ class NeuralNetwork:
 
             self.W[i] = self.W[i] - (self.learning_rate * dW)
             self.B[i] = self.B[i] - (self.learning_rate * dB)
+       
     
     def forward(self, model_inputs):
         """
@@ -76,12 +80,16 @@ class NeuralNetwork:
 
         for layer in range(len(self.W)-1):
             output = self.W[layer+1] @ activated_output + self.B[layer+1]
-            if self.activation_function == 'SIGMOID':
-                activated_output = self.sigmoid(output)
-            elif self.activation_function == 'RELU':
-                activated_output = self.relu(output)
-            elif self.activation_function == 'LEAKY-RELU':
-                activated_output = self.leaky_relu(output)
+
+            if layer == len(self.W) - 1:
+                activated_output = output
+            else:
+                if self.activation_function == 'SIGMOID':
+                    activated_output = self.sigmoid(output)
+                elif self.activation_function == 'RELU':
+                    activated_output = self.relu(output)
+                elif self.activation_function == 'LEAKY-RELU':
+                    activated_output = self.leaky_relu(output)
             
             self.activations.append(activated_output)
         
@@ -90,10 +98,10 @@ class NeuralNetwork:
 
     
     def relu(self, x):
-        return np.max(0, x)
+        return np.maximum(0, x)
     
     def leaky_relu(self, x):
-        return np.max(0.1*x, x)
+        return np.maximum(0.1*x, x)
     
     def sigmoid(self, x):
         return 1 / (1 + (math.e ** -x))
