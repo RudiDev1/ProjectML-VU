@@ -47,7 +47,8 @@ def clean_realtor_data(
     existing_drop_cols = [col for col in drop_columns if col in df.columns]
     df = df.drop(columns=existing_drop_cols)
     print(f"Dropped columns: {existing_drop_cols}")
-
+    if "price" in df.columns:
+        df = df.dropna(subset=["price"])
     # 4. Fix zip_code to always be 5 digits
     if "zip_code" in df.columns:
         df["zip_code"] = (
@@ -87,8 +88,8 @@ def clean_realtor_data(
 
 
 if __name__ == "__main__":
-    INPUT_FILE = "data/realtor_final_cleaned_zip5.csv"
-    OUTPUT_FILE = "data/clean_estate_data.csv"
+    INPUT_FILE = "realtor_final_cleaned_zip5.csv"
+    OUTPUT_FILE = "clean_estate_data.csv"
 
     clean_realtor_data(
         input_file=INPUT_FILE,
