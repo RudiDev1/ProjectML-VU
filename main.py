@@ -47,7 +47,7 @@ class NeuralNetwork:
                 if self.activation_function == 'SIGMOID':
                     dZ = dA * (priorA * (1 - priorA))
                 elif self.activation_function == 'RELU':
-                    dZ = dA * (priorA > 0)
+                    dZ = dA * np.where(priorA > 0, 1, 0.01)
             dW = (1 / n) * (dZ @ currentA.T)
             dB = (1 / n) * np.sum(dZ, axis=1, keepdims=True)
 
@@ -158,7 +158,7 @@ def main():
     y = dict_data["train"][0]
     y = y.reshape(1, -1)
     x = x.T
-    nn = NeuralNetwork(0.0000001, [8, 16, 8, 1])
+    nn = NeuralNetwork(0.0001, [8, 16, 8, 1])
 
     epochs = 1000
     for i in range(epochs):
