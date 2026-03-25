@@ -148,7 +148,9 @@ def prepare_data(path: str) -> dict[str: List]:
     test_inputs = np.concatenate([cI_test, id_i_test], 1)
     return {
         "train": [y_train, train_inputs],
-        "test": [y_test, test_inputs]
+        "test": [y_train, test_inputs],
+        "mean_output": y_mean,
+        "sd_output": y_sd
     }
     
 
@@ -158,7 +160,7 @@ def main():
     y = dict_data["train"][0]
     y = y.reshape(1, -1)
     x = x.T
-    nn = NeuralNetwork(0.000001, [8, 64, 32, 1])
+    nn = NeuralNetwork(0.0000000001, [8, 64, 32, 1])
 
     epochs = 1000
     for i in range(epochs):
@@ -166,5 +168,6 @@ def main():
         cost = nn.cost(y_hat, y)
         nn.back_prop(y)
         print(f'Epoch: {i} - cost: {cost} - {y_hat}')
-        print(f"Predict Range: [{np.min(y_hat):.4f} to {np.max(y_hat):.4f}] | Avg: {np.mean(y_hat):.4f}")
+        print(f"""Predict Range: [{(np.min(y_hat)*dict_data["sd_output"]+dict_data["mean_output"]):.4f} to {(np.max(y_hat)*dict_data["sd_output"]+dict_data["mean_output"]):.4f}] 
+              | Avg: {(np.mean(y_hat)*dict_data["sd_output"]+dict_data["mean_output"]):.4f}""")
 main()
