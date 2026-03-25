@@ -95,7 +95,7 @@ class NeuralNetwork:
 
     
     def relu(self, x):
-        return np.maximum(0, x)
+        return np.where(x > 0, x, x * 0.01)
     
     def leaky_relu(self, x):
         return np.maximum(0.1*x, x)
@@ -158,7 +158,7 @@ def main():
     y = dict_data["train"][0]
     y = y.reshape(1, -1)
     x = x.T
-    nn = NeuralNetwork(0.0001, [8, 16, 8, 1])
+    nn = NeuralNetwork(0.000001, [8, 64, 32, 1])
 
     epochs = 1000
     for i in range(epochs):
@@ -166,4 +166,5 @@ def main():
         cost = nn.cost(y_hat, y)
         nn.back_prop(y)
         print(f'Epoch: {i} - cost: {cost} - {y_hat}')
+        print(f"Predict Range: [{np.min(y_hat):.4f} to {np.max(y_hat):.4f}] | Avg: {np.mean(y_hat):.4f}")
 main()
