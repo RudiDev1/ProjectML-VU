@@ -11,11 +11,9 @@ class NeuralNetwork:
         _, self.B = self.set_up_wandb()
     
     def cost(self, model_outputs, expected_outputs):
-        losses = np.abs(model_outputs - expected_outputs)
-        summed_losses = np.sum(losses)
-        num_of_data = model_outputs.reshape(-1).shape[0]
-        average_losses = (1 / num_of_data) * summed_losses
-        return average_losses
+        error = model_outputs - expected_outputs
+        mse = np.mean(np.square(error))
+        return mse
     
     def set_up_wandb(self):
         """
@@ -43,10 +41,13 @@ class NeuralNetwork:
             priorA = self.activations[i+1]
             currentA = self.activations[i]
             
-            if self.activation_function == 'SIGMOID':
-                dZ = dA * (priorA * (1 - priorA))
-            elif self.activation_function == 'RELU':
-                dZ = dA * (priorA > 0)
+            if i == len(self.W) - 1:
+                dZ = dA
+            else:
+                if self.activation_function == 'SIGMOID':
+                    dZ = dA * (priorA * (1 - priorA))
+                elif self.activation_function == 'RELU':
+                    dZ = dA * (priorA > 0)
             dW = (1 / n) * (dZ @ currentA.T)
             dB = (1 / n) * np.sum(dZ, axis=1, keepdims=True)
 
@@ -157,7 +158,7 @@ def main():
     y = dict_data["train"][0]
     y = y.reshape(1, -1)
     x = x.T
-    nn = NeuralNetwork(0.001, [8, 3, 1])
+    nn = NeuralNetwork(0.0000001, [8, 16, 8, 1])
 
     epochs = 1000
     for i in range(epochs):
