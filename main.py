@@ -7,8 +7,7 @@ class NeuralNetwork:
         self.activation_function: str = activation_function
         self.learning_rate: float = learning_rate
         self.nodes_per_layer: List[int] = nodes_per_layer
-        self.W, _ = self.set_up_wandb()
-        _, self.B = self.set_up_wandb()
+        self.W, self.B = self.set_up_wandb()
     
     def cost(self, model_outputs, expected_outputs):
         losses = np.abs(model_outputs - expected_outputs)
@@ -29,8 +28,8 @@ class NeuralNetwork:
         W = []
         B = []
         for layer in range(1, len(nodes_per_layer)):
-            W.append(np.random.randn(nodes_per_layer[layer], nodes_per_layer[layer-1]))
-            B.append(np.random.randn(nodes_per_layer[layer], 1))
+            W.append(np.random.randn(nodes_per_layer[layer], nodes_per_layer[layer-1]) * 0.0001)
+            B.append(np.random.randn(nodes_per_layer[layer], 1) * 0.0001)
         return W, B
     
     def back_prop(self, y_true):
@@ -64,10 +63,6 @@ class NeuralNetwork:
         """
         self.activations = [model_inputs]
 
-        print(self.W[0])
-        print(self.W[0].shape)
-        print(model_inputs.shape)
-        print(self.B[0].shape)
         output = self.W[0] @ model_inputs + self.B[0]
         if self.activation_function == 'SIGMOID':
             activated_output = self.sigmoid(output)
@@ -129,6 +124,12 @@ def prepare_data(path: str) -> dict[str: List]:
     test_set = df.iloc[test_i]
     price_train = train_set["price"].values.astype(np.float64)
     price_test = test_set["price"].values.astype(np.float64)
+    #standardize output
+    y_mean = price_train.mean(axis=0)
+    y_sd = price_train.std(axis=0)
+
+    y_train = (price_train - y_mean) / y_sd
+    y_test = (price_test - y_mean)/ y_sd
     #numerical inputs == cI
     #bed,bath,acre_lot,house_size,state_id,national_area,sectional_center_facility,delivery_area
     cI_train = train_set[["bed", "bath", "acre_lot", "house_size"]].values.astype(np.float64)
@@ -144,8 +145,8 @@ def prepare_data(path: str) -> dict[str: List]:
     train_inputs = np.concatenate([cI_train, id_i_train], 1)
     test_inputs = np.concatenate([cI_test, id_i_test], 1)
     return {
-        "train": [price_train, train_inputs],
-        "test": [price_test, test_inputs]
+        "train": [y_train, train_inputs],
+        "test": [y_test, test_inputs]
     }
 
 def main():
@@ -174,12 +175,12 @@ def main():
     y = dict_data["train"][0]
     y = y.reshape(1, -1)
     x = x.T
-    nn = NeuralNetwork(0.01, [8, 3, 1])
+    nn = NeuralNetwork(0.001, [8, 3, 1])
 
     epochs = 100
     for i in range(epochs):
         y_hat = nn.forward(x)
         cost = nn.cost(y_hat, y)
         nn.back_prop(y)
-        print(f'Epoch: {i} - cost: {cost}')
+        print(f'Epoch: {i} - cost: {cost} - {y_hat}')
 main()
