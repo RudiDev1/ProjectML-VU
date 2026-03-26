@@ -2,6 +2,7 @@ import pandas as pd
 from pathlib import Path
 from states_classification import STATE_TO_ID
 import numpy as np
+import matplotlib.pyplot as plt
 def clean_realtor_data(
     input_file: str,
     output_file: str,
@@ -73,6 +74,12 @@ def clean_realtor_data(
         df["sectional_center_facility"] = df["sectional_center_facility"].astype(int).astype(np.int8)
         df["delivery_area"] = df["zip_code"].str[3:].astype(np.int8) #same case as above
         df = df.drop(columns="zip_code")
+    # Calculate the 1st percentile
+    lower_limit = df["price"].quantile(0.005)
+    # Filter the data
+    df = df[df["price"] > lower_limit]
+
+    print(f"Removed prices below: ${lower_limit:,.2f}")
     #creating numpy compatible values
     df["price"] = df["price"].astype(np.float64)
     df["bed"] = df["bed"].astype(np.int8)
@@ -80,16 +87,26 @@ def clean_realtor_data(
     df["acre_lot"] = df["acre_lot"].astype(np.float64)
     df["house_size"] = df["house_size"].astype(np.float64)
     #saved cleaned file
+    plot_show = input("do you want to see price distribution? y/n")
+    if plot_show == "y":
+        plt.figure(figsize=(10, 6))
+        np.log10(df["price"]).hist(bins=100, color='skyblue', edgecolor='black')
+        plt.title("Price Distribution (Log Scale)")
+        plt.xlabel("Log10 of Price (e.g., 6 = $1,000,000)")
+        plt.ylabel("Number of Houses")
+        plt.show()
+    #one-hot-encode states, and zips
+    df = pd.get_dummies(df, columns = ["state_id", "national_area"], dtype = np.int8)
     df.to_csv(output_file, index=False)
-
+   
     print(f"Final rows: {len(df)}")
     print(f"Final columns: {list(df.columns)}")
     print(f"Saved cleaned dataset to: {output_file}")
 
 
 if __name__ == "__main__":
-    INPUT_FILE = "realtor_final_cleaned_zip5.csv"
-    OUTPUT_FILE = "clean_estate_data.csv"
+    INPUT_FILE = "data/realtor_final_cleaned_zip5.csv"
+    OUTPUT_FILE = "data/clean_estate_data.csv"
 
     clean_realtor_data(
         input_file=INPUT_FILE,
