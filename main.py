@@ -188,7 +188,24 @@ def prepare_data(path: str) -> dict[str: List]:
         "mean_output": y_mean,
         "sd_output": y_sd
     }
-    
+
+def evaluate(nn, x_test, y_test, mean, sd):
+    y_hat_normed = nn.forward(x_test)
+    cost = nn.cost(y_hat_normed, y_test)
+
+    y_hat_unnormed = (y_hat_normed * sd) + mean
+    y_true_unnormed = (y_test * sd) + mean
+
+    mean_abs_error = np.mean(np.abs(y_hat_unnormed - y_true_unnormed))
+
+    print("--------TEST SET EVALUATION----------")
+    print(f"Normalised Huber Loss: {cost}")
+    print(f"Mean Absolute Error {mean_abs_error}")
+    print(f"Predicted Range: from {np.min(y_hat_unnormed)} to {np.max(y_hat_unnormed)}")
+    print(f"Actual Range: from {np.min(y_true_unnormed)} to {np.max(y_true_unnormed)}")
+    print(f"Average Prediction: {np.mean(y_hat_unnormed)}")
+    print(f"Average Actual Price: {np.mean(y_true_unnormed)}")
+
 
 def main():
     dict_data = prepare_data("data/clean_estate_data.csv")
@@ -223,6 +240,14 @@ def main():
             true range: [{(np.min(y_v)*dict_data["sd_output"]+dict_data["mean_output"]):.4f} to {(np.max(y_v)*dict_data["sd_output"]+dict_data["mean_output"]):.4f}] 
             #####
             Avg: {(np.mean(y_hat_v)*dict_data["sd_output"]+dict_data["mean_output"]):.4f}, True avarage {(np.mean(y_v)*dict_data["sd_output"]+dict_data["mean_output"]):.4f}""")
+    
+    x_t = dict_data["test"][1]
+    y_t = dict_data["test"][0]
+    y_t = y_t.reshape(1, -1)
+    x_t = x_t.T
+
+    evaluate(nn, x_t, y_t, dict_data["mean_output"], dict_data["sd_output"])
+    
 def batching(x, y, batch_size):
     np.random.seed(1832)
     batches = []

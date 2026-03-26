@@ -58,16 +58,22 @@ def prepare_data(path: str) -> dict[str: List]:
 extracted_data = prepare_data("data/clean_estate_data.csv")
 
 model = MLPRegressor(
-    hidden_layer_sizes=(64, 32),  # One hidden layer with 100 neurons
+    hidden_layer_sizes=(134, 67, 34, 17, 8),
     activation='relu',
-    solver='adam',
-    max_iter=1000,
-    random_state=42,
+    solver='sdg',
+    learning_rate_init=0.001,
+    momentum=0.9,
+    batch_size=128,
+    max_iter=200,
+    random_state=1832,
 )
 
 model.fit(extracted_data['train'][1], extracted_data['train'][0])
 
 y_pred = model.predict(extracted_data['test'][1])
-mse = sklearn.metrics.mean_squared_error(extracted_data['test'][0], y_pred)
+y_true = extracted_data['test'][0]
 
-y_pred_nn = model.predict(extracted_data['test'][1])
+def evaluate(y_true, y_pred):
+    mse = sklearn.metrics.mean_squared_error(y_true, y_pred)
+    mae = sklearn.metrics.mean_absolute_error(y_true, y_pred)
+    print(f"MSE: {mse} ||| MAE: {mae}")
