@@ -40,6 +40,7 @@ class NeuralNetwork:
 
         returns an array of matrices of weights and array of matrices of bias
         """
+        np.random.seed(1832)
         nodes_per_layer = self.nodes_per_layer
         W = []
         B = []
@@ -237,9 +238,9 @@ def main():
     print(f"""Cost: {cost_v}, 
             #####
             predicted range: [{(np.min(y_hat_v)*dict_data["sd_output"]+dict_data["mean_output"]):.4f} to {(np.max(y_hat_v)*dict_data["sd_output"]+dict_data["mean_output"]):.4f}] 
-            true range: [{(np.min(y_v)*dict_data["sd_output"]+dict_data["mean_output"]):.4f} to {(np.max(y_v)*dict_data["sd_output"]+dict_data["mean_output"]):.4f}] 
+            sample range: [{(np.min(y_v)*dict_data["sd_output"]+dict_data["mean_output"]):.4f} to {(np.max(y_v)*dict_data["sd_output"]+dict_data["mean_output"]):.4f}] 
             #####
-            Avg: {(np.mean(y_hat_v)*dict_data["sd_output"]+dict_data["mean_output"]):.4f}, True avarage {(np.mean(y_v)*dict_data["sd_output"]+dict_data["mean_output"]):.4f}""")
+            Avg: {(np.mean(y_hat_v)*dict_data["sd_output"]+dict_data["mean_output"]):.4f}, sample avarage {(np.mean(y_v)*dict_data["sd_output"]+dict_data["mean_output"]):.4f}""")
     
     x_t = dict_data["test"][1]
     y_t = dict_data["test"][0]
