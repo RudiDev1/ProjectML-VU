@@ -130,8 +130,14 @@ class NeuralNetwork:
     def sigmoid(self, x):
         return 1 / (1 + (math.e ** -x))
     
-    def run_nn():
-        return
+    def save_model(self):
+        np.savez("nn_scratch", *self.W, *self.B)
+
+    def init_model_from_file(self, file):
+            data = np.load(file)
+            self.W = [data[f'arr_{i}'] for i in range (6)] #due to weight being first 6 arrays
+            self.B = [data[f'arr_{i}'] for i in range (6,12)] #due bias being arrays from 6 to 12 
+            print("Model loaded")
 
 def prepare_data(path: str) -> dict[str: List]:
     """
@@ -181,7 +187,6 @@ def prepare_data(path: str) -> dict[str: List]:
     train_inputs = np.concatenate([cI_train, train_set[[c for c in df.columns if c.startswith(('state_id_', 'national_area_'))]]], 1)
     test_inputs = np.concatenate([cI_test, test_set[[c for c in df.columns if c.startswith(('state_id_', 'national_area_'))]]], 1)
     val_inputs = np.concatenate([cI_val, val_set[[c for c in df.columns if c.startswith(('state_id_', 'national_area_'))]]], 1)
-    print(train_inputs)
     return {
         "train": [y_train, train_inputs],
         "val": [y_val, val_inputs],
@@ -208,7 +213,7 @@ def evaluate(nn, x_test, y_test, mean, sd):
     print(f"Average Actual Price: {np.mean(y_true_unnormed)}")
 
 
-def main():
+def train_validate():
     dict_data = prepare_data("data/clean_estate_data.csv")
     x = dict_data["train"][1]
     y = dict_data["train"][0]
@@ -217,7 +222,7 @@ def main():
     nn = NeuralNetwork(0.001, [67, 134, 67, 34, 17, 8, 1])
     epochs = 200
     
-    for i in range(epochs+1):
+    for i in range(1, epochs+1):
         batches = batching(x, y, 128)
         for x_b, y_b in batches:
             y_hat = nn.forward(x_b)
@@ -241,14 +246,28 @@ def main():
             sample range: [{(np.min(y_v)*dict_data["sd_output"]+dict_data["mean_output"]):.4f} to {(np.max(y_v)*dict_data["sd_output"]+dict_data["mean_output"]):.4f}] 
             #####
             Avg: {(np.mean(y_hat_v)*dict_data["sd_output"]+dict_data["mean_output"]):.4f}, sample avarage {(np.mean(y_v)*dict_data["sd_output"]+dict_data["mean_output"]):.4f}""")
+    nn.save_model()
+    return nn
     
+    
+def evaluate_model():
+    check = input("Do you want to run training/validation or model from file? y/n")
+    if check == "y":
+        nn = train_validate() 
+    else:
+        nn = get_model()
+    dict_data = prepare_data("data/clean_estate_data.csv")
     x_t = dict_data["test"][1]
     y_t = dict_data["test"][0]
     y_t = y_t.reshape(1, -1)
     x_t = x_t.T
-
     evaluate(nn, x_t, y_t, dict_data["mean_output"], dict_data["sd_output"])
-    
+def get_model():
+    dict_data = prepare_data("data/clean_estate_data.csv")
+    nn =  NeuralNetwork(0.001, [67, 134, 67, 34, 17, 8, 1])
+    nn.init_model_from_file("nn_scratch.npz")
+    return nn
+
 def batching(x, y, batch_size):
     np.random.seed(1832)
     batches = []
@@ -263,4 +282,4 @@ def batching(x, y, batch_size):
         y_batch = new_y[:, i:i +batch_size]
         batches.append((x_batch, y_batch))
     return batches
-main()
+evaluate_model()

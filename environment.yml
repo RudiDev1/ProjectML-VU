@@ -1,4 +1,4 @@
-#If anything is added later use "conda env create -f environment.yml --force" to change to updated one#
+#If anything is added later use "conda env update -f environment.yml --prune" to change to updated one#
 name: MLProject
 channels:
   - conda-forge
@@ -12,3 +12,6 @@ dependencies:
   - pandas
   - sympy         
   - jupyter  
+  - pip
+  - pip:
+    - torch
