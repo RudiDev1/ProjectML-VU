@@ -19,7 +19,7 @@ cd data
 python cleaning_data_panda.py
 ```
 ## Running NN from scratch Model
-### If cleaning data was runned ensure to come back to Project's main folder
+### If cleaning data was done ensure to come back to Project's main folder
 ```Bash
 cd ..
 ```
