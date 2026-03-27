@@ -87,12 +87,12 @@ def clean_realtor_data(
     df["acre_lot"] = df["acre_lot"].astype(np.float64)
     df["house_size"] = df["house_size"].astype(np.float64)
     #saved cleaned file
-    plot_show = input("do you want to see price distribution? y/n")
+    plot_show = input("Do you want to see price distribution? y/n")
     if plot_show == "y":
         plt.figure(figsize=(10, 6))
         np.log10(df["price"]).hist(bins=100, color='skyblue', edgecolor='black')
         plt.title("Price Distribution (Log Scale)")
-        plt.xlabel("Log10 of Price (e.g., 6 = $1,000,000)")
+        plt.xlabel("Log10 of Price")
         plt.ylabel("Number of Houses")
         plt.show()
     #one-hot-encode states, and zips
@@ -105,8 +105,8 @@ def clean_realtor_data(
 
 
 if __name__ == "__main__":
-    INPUT_FILE = "data/realtor_final_cleaned_zip5.csv"
-    OUTPUT_FILE = "data/clean_estate_data.csv"
+    INPUT_FILE = "realtor_final_cleaned_zip5.csv"
+    OUTPUT_FILE = "clean_estate_data.csv"
 
     clean_realtor_data(
         input_file=INPUT_FILE,
