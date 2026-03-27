@@ -87,7 +87,7 @@ def clean_realtor_data(
     df["acre_lot"] = df["acre_lot"].astype(np.float64)
     df["house_size"] = df["house_size"].astype(np.float64)
     #saved cleaned file
-    plot_show = input("Do you want to see price distribution? y/n")
+    plot_show = input("Do you want to see price distribution? y/n ")
     if plot_show == "y":
         plt.figure(figsize=(10, 6))
         np.log10(df["price"]).hist(bins=100, color='skyblue', edgecolor='black')

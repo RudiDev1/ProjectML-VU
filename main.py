@@ -266,7 +266,7 @@ def train_validate():
     
     
 def evaluate_model():
-    check = input("Do you want to run training/validation or model from file? y/n")
+    check = input("Do you want to run training/validation (y) or model from file (n)? y/n ")
     if check == "y":
         nn = train_validate() 
     else:
