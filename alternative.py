@@ -13,6 +13,8 @@ import numpy as np
 import pandas as pd
 import random
 
+import matplotlib.pyplot as plt
+
 
 def evaluate(model, extracted_data):
     x_t = torch.tensor(extracted_data['test'][1], dtype=torch.float32)
@@ -26,6 +28,7 @@ def evaluate(model, extracted_data):
     mean_sq_error = sklearn.metrics.mean_squared_error(y_true_unnorm, y_hat_unnorm)
     mean_abs_error = sklearn.metrics.mean_absolute_error(y_true_unnorm, y_hat_unnorm)
     print(f"MSE: {mean_sq_error} ||| MAE: {mean_abs_error}")
+    print(f"Predicted Average: {np.mean(y_hat_unnorm)}")
     print(f"Predicted Range: from {np.min(y_hat_unnorm)} to {np.max(y_hat_unnorm)}")
     print(f"Actual Range: from {np.min(y_true_unnorm)} to {np.max(y_true_unnorm)}")
 
@@ -152,7 +155,9 @@ y = y.reshape(1, -1)
 x = x.T
 
 epochs = 200
-for i in range(epochs+1):
+epoch_arr = []
+losses = []
+for i in range(1, epochs+1):
     model.train()
     batches = batching(x, y, 128)
     epoch_loss = 0
@@ -169,8 +174,21 @@ for i in range(epochs+1):
         optimizer.step()
 
         epoch_loss += measured_loss.item()
+        final_loss = measured_loss.item()
 
     print(f'Epoch: {i} - loss: {epoch_loss/len(batches)}')
+    epoch_arr.append(i)
+    losses.append(final_loss)
+
+plt.figure(figsize=(10, 6))
+plt.plot(epoch_arr, losses, label='Training Cost', color='blue')
+plt.title('Loss vs. Epochs (PyTorch Model)')
+plt.xlabel('Epoch')
+plt.ylabel('Cost')
+plt.legend()
+plt.grid(True)
+plt.show()
+plt
 
 evaluate(model, extracted_data)
 

@@ -2,6 +2,8 @@ import math
 from typing import List
 import numpy as np
 import pandas as pd
+
+import matplotlib.pyplot as plt
 class NeuralNetwork:
     def __init__(self, learning_rate, nodes_per_layer, activation_function='RELU'):
         self.activation_function: str = activation_function
@@ -221,6 +223,8 @@ def train_validate():
     x = x.T
     nn = NeuralNetwork(0.001, [67, 134, 67, 34, 17, 8, 1])
     epochs = 200
+    epoch_arr = []
+    losses = []
     
     for i in range(1, epochs+1):
         batches = batching(x, y, 128)
@@ -229,8 +233,19 @@ def train_validate():
             cost = nn.cost(y_hat, y_b)
             nn.back_prop(y_b)
         print(f'Epoch: {i} - cost: {cost}')
+        epoch_arr.append(i)
+        losses.append(cost)
         print(f"""Predict Range: [{(np.min(y_hat)*dict_data["sd_output"]+dict_data["mean_output"]):.4f} to {(np.max(y_hat)*dict_data["sd_output"]+dict_data["mean_output"]):.4f}] 
               | Avg: {(np.mean(y_hat)*dict_data["sd_output"]+dict_data["mean_output"]):.4f}""")
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(epoch_arr, losses, label='Training Cost', color='blue')
+    plt.title('Loss vs. Epochs')
+    plt.xlabel('Epoch')
+    plt.ylabel('Cost')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
     #validation
     x_v = dict_data["val"][1]
